@@ -1,0 +1,1431 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>🎟️ Multiplayer Booking Test</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 20px;
+      }
+
+      .container {
+        max-width: 1000px;
+        margin: 0 auto;
+      }
+
+      .header {
+        background: rgba(255, 255, 255, 0.95);
+        padding: 2rem;
+        border-radius: 15px;
+        text-align: center;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      }
+
+      .header h1 {
+        color: #333;
+        margin-bottom: 10px;
+        font-size: 2.5rem;
+      }
+
+      .header p {
+        color: #666;
+        font-size: 1.1rem;
+      }
+
+      .user-badge {
+        display: inline-block;
+        background: #007bff;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 25px;
+        margin: 10px 0;
+        font-weight: bold;
+      }
+
+      .section {
+        background: rgba(255, 255, 255, 0.95);
+        padding: 25px;
+        margin: 20px 0;
+        border-radius: 15px;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+      }
+
+      .race-setup {
+        background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+        color: white;
+      }
+
+      .race-setup h3 {
+        margin-bottom: 15px;
+      }
+
+      .conference-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+        margin: 20px 0;
+      }
+
+      .conference-card {
+        background: white;
+        border: 2px solid #e0e0e0;
+        border-radius: 12px;
+        padding: 20px;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .conference-card:hover {
+        border-color: #007bff;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 123, 255, 0.2);
+      }
+
+      .conference-card.race-target {
+        border-color: #ff6b6b;
+        background: linear-gradient(135deg, #fff5f5, #ffe0e0);
+      }
+
+      .conference-card h4 {
+        color: #333;
+        margin-bottom: 10px;
+        font-size: 1.3rem;
+      }
+
+      .ticket-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 15px 0;
+      }
+
+      .ticket-count {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #28a745;
+      }
+
+      .ticket-count.low {
+        color: #ffc107;
+      }
+
+      .ticket-count.critical {
+        color: #dc3545;
+        animation: pulse 1s infinite;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.7;
+        }
+      }
+
+      .price {
+        font-size: 1.2rem;
+        color: #666;
+        font-weight: bold;
+      }
+
+      .booking-controls {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        margin-top: 15px;
+      }
+
+      .ticket-input {
+        width: 80px;
+        padding: 8px;
+        border: 2px solid #ddd;
+        border-radius: 6px;
+        text-align: center;
+        font-size: 16px;
+      }
+
+      button {
+        background: #007bff;
+        color: white;
+        padding: 12px 20px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: bold;
+        transition: all 0.3s ease;
+        flex: 1;
+      }
+
+      button:hover {
+        background: #0056b3;
+        transform: translateY(-1px);
+      }
+
+      button:disabled {
+        background: #6c757d;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .race-button {
+        background: #dc3545 !important;
+        font-size: 18px !important;
+        padding: 15px 25px !important;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      .race-button:hover {
+        background: #c82333 !important;
+      }
+
+      .status-display {
+        background: #f8f9fa;
+        border-left: 4px solid #007bff;
+        padding: 15px;
+        margin: 15px 0;
+        border-radius: 0 8px 8px 0;
+      }
+
+      .status-display.success {
+        border-left-color: #28a745;
+        background: #d4edda;
+      }
+
+      .status-display.error {
+        border-left-color: #dc3545;
+        background: #f8d7da;
+      }
+
+      .live-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+        margin: 20px 0;
+      }
+
+      .stat-box {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        text-align: center;
+        border: 2px solid #e9ecef;
+      }
+
+      .stat-number {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #007bff;
+        display: block;
+      }
+
+      .stat-label {
+        color: #666;
+        font-size: 0.9rem;
+        margin-top: 5px;
+      }
+
+      .race-instructions {
+        background: #fff3cd;
+        border: 1px solid #ffeaa7;
+        border-radius: 8px;
+        padding: 20px;
+        margin: 20px 0;
+      }
+
+      .online-users {
+        background: #d1ecf1;
+        border: 1px solid #bee5eb;
+        border-radius: 8px;
+        padding: 15px;
+        margin: 15px 0;
+      }
+
+      .connection-status {
+        display: inline-block;
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-weight: bold;
+        margin: 10px 0;
+      }
+
+      .connection-status.connected {
+        background: #d4edda;
+        color: #155724;
+      }
+
+      .connection-status.disconnected {
+        background: #f8d7da;
+        color: #721c24;
+      }
+
+      .booking-history {
+        max-height: 400px;
+        overflow-y: auto;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        background: #fafafa;
+      }
+
+      .booking-item {
+        padding: 12px 15px;
+        border-bottom: 1px solid #eee;
+        background: white;
+        margin-bottom: 1px;
+        transition: background-color 0.2s ease;
+      }
+
+      .booking-item:hover {
+        background: #f8f9fa;
+      }
+
+      /* Reservation and Payment Queue Styles */
+      .payment-queue {
+        background: #fff3cd;
+        border: 2px solid #ffc107;
+        border-radius: 8px;
+        padding: 20px;
+        margin: 15px 0;
+        position: relative;
+      }
+
+      .payment-queue.active {
+        background: #d4edda;
+        border-color: #28a745;
+        animation: pulse-green 2s infinite;
+      }
+
+      @keyframes pulse-green {
+        0%,
+        100% {
+          box-shadow: 0 0 5px rgba(40, 167, 69, 0.5);
+        }
+        50% {
+          box-shadow: 0 0 20px rgba(40, 167, 69, 0.8);
+        }
+      }
+
+      .countdown-timer {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #dc3545;
+        text-align: center;
+        margin: 10px 0;
+      }
+
+      .countdown-timer.warning {
+        animation: pulse-red 1s infinite;
+      }
+
+      @keyframes pulse-red {
+        0%,
+        100% {
+          color: #dc3545;
+        }
+        50% {
+          color: #ff6b6b;
+        }
+      }
+
+      .payment-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 15px;
+      }
+
+      .confirm-payment {
+        background: #28a745 !important;
+        flex: 2;
+      }
+
+      .cancel-payment {
+        background: #dc3545 !important;
+        flex: 1;
+      }
+
+      .reservation-item {
+        background: #fff3cd;
+        border: 1px solid #ffc107;
+        border-radius: 8px;
+        padding: 15px;
+        margin: 10px 0;
+        position: relative;
+      }
+
+      .reservation-item.expired {
+        background: #f8d7da;
+        border-color: #dc3545;
+        opacity: 0.7;
+      }
+
+      .booking-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 5px;
+      }
+
+      .booking-user {
+        font-weight: bold;
+        color: #007bff;
+      }
+
+      .booking-time {
+        color: #666;
+        font-size: 0.9rem;
+      }
+
+      .booking-details {
+        color: #333;
+        font-size: 0.95rem;
+      }
+
+      .booking-conference {
+        color: #28a745;
+        font-weight: 500;
+      }
+
+      .booking-amount {
+        color: #dc3545;
+        font-weight: bold;
+      }
+
+      @media (max-width: 768px) {
+        .conference-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .booking-controls {
+          flex-direction: column;
+        }
+
+        .ticket-input {
+          width: 100%;
+          margin-bottom: 10px;
+        }
+
+        .booking-header {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+
+        .booking-time {
+          margin-top: 3px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <!-- Header -->
+      <div class="header">
+        <h1>🎟️ Multiplayer Booking Race</h1>
+        <p>Real-time concurrency testing with multiple users</p>
+        <div id="user-info"></div>
+        <div id="connection-status" class="connection-status disconnected">
+          🔴 Connecting...
+        </div>
+      </div>
+
+      <!-- Demo Helpers -->
+      <div class="section" id="demo-helpers">
+        <h3>🧪 Demo Helpers</h3>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px">
+          <button onclick="createDemoUser('Alice','alice@example.com')">
+            Create Alice
+          </button>
+          <button onclick="openSecondWindow()">Open Second Window</button>
+          <button onclick="createDemoUser('Bob','bob@example.com')">
+            Create Bob
+          </button>
+        </div>
+        <div
+          style="
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+            align-items: center;
+          "
+        >
+          <input
+            type="text"
+            id="api-override"
+            placeholder="http://127.0.0.1:8081"
+            style="
+              width: 260px;
+              padding: 8px;
+              border: 2px solid #ddd;
+              border-radius: 6px;
+            "
+          />
+          <button onclick="applyApiOverride()">Use API Host</button>
+          <button onclick="copyLinkWithApi()">Copy demo link</button>
+        </div>
+        <p style="color: #666; margin-top: 8px">
+          Tip: Use two windows — Alice here, Bob in the second window. Pick the
+          same conference and try to book simultaneously to see holds and the
+          queue.
+        </p>
+      </div>
+
+      <!-- Race Instructions -->
+      <div class="section race-setup">
+        <h3>🏁 How to Test Multiplayer Concurrency</h3>
+        <div class="race-instructions">
+          <p><strong>Step 1:</strong> Share this URL with a friend/colleague</p>
+          <p><strong>Step 2:</strong> Both pick the same conference</p>
+          <p>
+            <strong>Step 3:</strong> Try to book tickets at the exact same time
+          </p>
+          <p>
+            <strong>Step 4:</strong> Watch the thread-safe magic prevent
+            overbooking!
+          </p>
+        </div>
+      </div>
+
+      <!-- Connection & User Management -->
+      <div class="section">
+        <h3>👤 User Setup</h3>
+        <div id="user-setup">
+          <input
+            type="text"
+            id="user-name"
+            placeholder="Your Name"
+            style="
+              width: 200px;
+              padding: 10px;
+              margin: 10px;
+              border: 2px solid #ddd;
+              border-radius: 6px;
+            "
+          />
+          <input
+            type="email"
+            id="user-email"
+            placeholder="your.email@test.com"
+            style="
+              width: 250px;
+              padding: 10px;
+              margin: 10px;
+              border: 2px solid #ddd;
+              border-radius: 6px;
+            "
+          />
+          <button onclick="createUser()" id="create-user-btn">Join Race</button>
+        </div>
+      </div>
+
+      <!-- Live Conference Status -->
+      <div class="section">
+        <h3>📊 Live Conference Status</h3>
+        <div class="live-stats" id="live-stats">
+          <div class="stat-box">
+            <span class="stat-number" id="total-conferences">-</span>
+            <div class="stat-label">Conferences</div>
+          </div>
+          <div class="stat-box">
+            <span class="stat-number" id="total-available">-</span>
+            <div class="stat-label">Available Tickets</div>
+          </div>
+          <div class="stat-box">
+            <span class="stat-number" id="active-bookings">-</span>
+            <div class="stat-label">Total Bookings</div>
+          </div>
+        </div>
+
+        <div class="conference-grid" id="conferences-grid">
+          <!-- Conferences will be loaded here -->
+        </div>
+
+        <button
+          onclick="refreshConferences()"
+          style="width: 100%; margin-top: 15px"
+        >
+          🔄 Refresh Live Status
+        </button>
+      </div>
+
+      <!-- Booking Results -->
+      <div class="section">
+        <h3>📈 Race Results</h3>
+        <div id="booking-results" class="status-display">
+          Ready for multiplayer testing...
+        </div>
+      </div>
+
+      <!-- Booking History -->
+      <div class="section">
+        <h3>📋 Live Booking History</h3>
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+          "
+        >
+          <p style="color: #666; margin: 0">
+            Real-time view of all bookings made during this session
+          </p>
+          <button onclick="refreshBookingHistory()" style="padding: 8px 16px">
+            🔄 Refresh
+          </button>
+        </div>
+
+        <div id="booking-history" class="booking-history">
+          <div style="text-align: center; color: #999; padding: 20px">
+            Loading booking history...
+          </div>
+        </div>
+      </div>
+
+      <!-- Payment Queue Section -->
+      <div class="section" id="payment-queue-section" style="display: none">
+        <h3>⏰ Payment Queue (15 Second Timer)</h3>
+        <div id="payment-queue" class="payment-queue">
+          <div style="text-align: center; color: #666; padding: 20px">
+            No active reservations
+          </div>
+        </div>
+      </div>
+
+      <!-- Active Reservations -->
+      <div class="section" id="reservations-section" style="display: none">
+        <h3>🎫 Your Active Reservations</h3>
+        <div id="user-reservations">
+          <div style="text-align: center; color: #999; padding: 20px">
+            No active reservations
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Robust API base detection with fallbacks for file:// and overrides
+      function resolveApiBase() {
+        try {
+          const params = new URLSearchParams(window.location.search);
+          const override = params.get("api"); // e.g. ?api=http://192.168.1.50:8080
+          if (override) {
+            const val = override.replace(/\/$/, "");
+            localStorage.setItem("API_BASE", `${val}/api/v1`);
+            return `${val}/api/v1`;
+          }
+
+          const saved = localStorage.getItem("API_BASE");
+          if (saved) return saved;
+
+          const isHttp =
+            window.location.protocol === "http:" ||
+            window.location.protocol === "https:";
+          if (isHttp && window.location.host) {
+            return `${window.location.protocol}//${window.location.host}/api/v1`;
+          }
+
+          // Fallback for file:// or missing host
+          return "http://127.0.0.1:8080/api/v1";
+        } catch (e) {
+          return "http://127.0.0.1:8080/api/v1";
+        }
+      }
+
+      const API_BASE = resolveApiBase();
+
+      let currentUser = null;
+      let refreshInterval = null;
+      let secondTick = null;
+      let activeReservations = [];
+      let paymentTimers = {};
+      let conferencesCache = [];
+      let conferenceStats = {};
+      let queuePositions = {}; // { [confId]: position }
+
+      // Display current server info
+      document.addEventListener("DOMContentLoaded", function () {
+        document.getElementById(
+          "connection-status"
+        ).innerHTML = `🌐 API: ${API_BASE}`;
+        checkConnection();
+        startAutoRefresh();
+        startOneSecondTick();
+        // Prefill override field if present
+        try {
+          const saved = localStorage.getItem("API_BASE");
+          if (saved) {
+            const base = saved.replace(/\/api\/v1$/, "");
+            const input = document.getElementById("api-override");
+            if (input) input.value = base;
+          }
+        } catch (_) {}
+      });
+
+      async function checkConnection() {
+        try {
+          const response = await fetch(`${API_BASE}/health`);
+          const data = await response.json();
+
+          document.getElementById("connection-status").className =
+            "connection-status connected";
+          document.getElementById("connection-status").innerHTML =
+            "🟢 Connected to server";
+
+          await refreshConferences();
+          await refreshBookingHistory();
+        } catch (error) {
+          document.getElementById("connection-status").className =
+            "connection-status disconnected";
+          document.getElementById("connection-status").innerHTML =
+            "🔴 Server not responding";
+          console.error("Connection failed:", error);
+        }
+      }
+
+      async function createUser() {
+        const name = document.getElementById("user-name").value.trim();
+        const email = document.getElementById("user-email").value.trim();
+
+        if (!name || !email) {
+          alert("Please enter both name and email");
+          return;
+        }
+
+        try {
+          const response = await fetch(`${API_BASE}/users`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name, email }),
+          });
+
+          const result = await response.json();
+
+          if (response.ok) {
+            currentUser = result;
+            document.getElementById(
+              "user-info"
+            ).innerHTML = `<div class="user-badge">🏁 Racer: ${currentUser.name}</div>`;
+
+            document.getElementById(
+              "user-setup"
+            ).innerHTML = `<div class="status-display success">✅ Ready to race as ${currentUser.name}!</div>`;
+
+            logResult(`✅ Joined as ${currentUser.name}`, "success");
+          } else if (response.status === 409) {
+            // User already exists, use the existing user
+            currentUser = result;
+            document.getElementById(
+              "user-info"
+            ).innerHTML = `<div class="user-badge">🏁 Racer: ${currentUser.name}</div>`;
+
+            document.getElementById(
+              "user-setup"
+            ).innerHTML = `<div class="status-display success">✅ Welcome back ${currentUser.name}!</div>`;
+
+            logResult(`✅ Welcome back ${currentUser.name}`, "success");
+          } else {
+            throw new Error(result.error);
+          }
+        } catch (error) {
+          logResult(`❌ Failed to join: ${error.message}`, "error");
+        }
+      }
+
+      // Demo helpers
+      function createDemoUser(name, email) {
+        const nameEl = document.getElementById("user-name");
+        const emailEl = document.getElementById("user-email");
+        if (currentUser) {
+          showResult(`Already joined as ${currentUser.name}`, "error");
+          return;
+        }
+        if (nameEl && emailEl) {
+          nameEl.value = name;
+          emailEl.value = email;
+        }
+        createUser();
+      }
+
+      function openSecondWindow() {
+        const url = new URL(window.location.href);
+        // Keep API override if set
+        const input = document.getElementById("api-override");
+        if (input && input.value) {
+          url.searchParams.set("api", input.value.replace(/\/$/, ""));
+        }
+        window.open(url.toString(), "_blank");
+      }
+
+      function applyApiOverride() {
+        const input = document.getElementById("api-override");
+        const val = (input?.value || "").trim();
+        if (!val) return;
+        try {
+          const base = val.replace(/\/$/, "");
+          localStorage.setItem("API_BASE", `${base}/api/v1`);
+          showResult(`Using API ${base}`, "success");
+          setTimeout(() => location.reload(), 400);
+        } catch (e) {
+          showResult(`Invalid API host`, "error");
+        }
+      }
+
+      async function copyLinkWithApi() {
+        try {
+          const input = document.getElementById("api-override");
+          const base = (input?.value || "").trim();
+          const url = new URL(window.location.href);
+          if (base) url.searchParams.set("api", base.replace(/\/$/, ""));
+          await navigator.clipboard.writeText(url.toString());
+          showResult("Link copied", "success");
+        } catch (e) {
+          showResult("Could not copy link", "error");
+        }
+      }
+
+      async function refreshConferences() {
+        try {
+          const response = await fetch(`${API_BASE}/conferences`);
+          const data = await response.json();
+
+          if (data.conferences) {
+            conferencesCache = data.conferences;
+            conferenceStats = data.stats || {};
+            displayConferences(conferencesCache);
+            updateStats(conferencesCache);
+            if (currentUser) {
+              // refresh queue positions for visible conferences
+              await refreshQueuePositions();
+            }
+          }
+        } catch (error) {
+          console.error("Failed to refresh conferences:", error);
+        }
+      }
+
+      async function refreshQueuePositions() {
+        try {
+          if (!currentUser || !Array.isArray(conferencesCache)) return;
+          const fetches = conferencesCache.map((c) =>
+            fetch(
+              `${API_BASE}/queue/${encodeURIComponent(
+                c.id
+              )}/position?user_id=${encodeURIComponent(currentUser.id)}`
+            )
+              .then((r) => r.json())
+              .then((res) => ({ id: c.id, pos: res.position || 0 }))
+              .catch(() => ({ id: c.id, pos: 0 }))
+          );
+          const results = await Promise.all(fetches);
+          queuePositions = results.reduce((acc, x) => {
+            acc[x.id] = x.pos;
+            return acc;
+          }, {});
+          // re-render to reflect updated positions
+          displayConferences(conferencesCache);
+        } catch (e) {
+          // ignore
+        }
+      }
+
+      function displayConferences(conferences) {
+        const grid = document.getElementById("conferences-grid");
+
+        grid.innerHTML = conferences
+          .map((conf) => {
+            const percentage =
+              (conf.available_tickets / conf.total_tickets) * 100;
+            const ticketClass =
+              percentage > 50 ? "" : percentage > 20 ? "low" : "critical";
+            const stats = conferenceStats?.[conf.id] || {
+              Reserved: 0,
+              Queue: 0,
+            };
+            const reserved = stats.Reserved || 0;
+            const queueLen = stats.Queue || 0;
+            const effectiveLeft = Math.max(
+              0,
+              (conf.available_tickets || 0) - reserved
+            );
+            const userBlocked =
+              !!currentUser &&
+              (activeReservations || []).some((r) => {
+                const confId =
+                  (r.conference && r.conference.id) ||
+                  (r.reservation && r.reservation.conference_id);
+                return !r.expired && confId === conf.id;
+              });
+            const myPos = queuePositions[conf.id] || 0;
+
+            return `
+            <div class="conference-card ${
+              percentage <= 25 ? "race-target" : ""
+            }">
+              <h4>${conf.name}</h4>
+              <div class="ticket-info">
+                <div>
+                  <span class="ticket-count ${ticketClass}">${effectiveLeft}</span>
+                  <span style="color: #999;">/ ${
+                    conf.total_tickets
+                  } tickets</span>
+                </div>
+                <div class="price">$${conf.price}</div>
+              </div>
+
+              <div style="display:flex; gap:10px; margin: 6px 0 0 0; flex-wrap: wrap;">
+                ${
+                  reserved > 0
+                    ? `<span style="background:#fff3cd;border:1px solid #ffc107;border-radius:12px;padding:2px 8px;color:#856404;font-size:12px;">On hold: ${reserved}</span>`
+                    : ""
+                }
+                ${
+                  queueLen > 0
+                    ? `<span style=\"background:#e2e3e5;border:1px solid #d6d8db;border-radius:12px;padding:2px 8px;color:#383d41;font-size:12px;\">In queue: ${queueLen}</span>`
+                    : ""
+                }
+                ${
+                  myPos > 0
+                    ? `<span style=\"background:#d4edda;border:1px solid #c3e6cb;border-radius:12px;padding:2px 8px;color:#155724;font-size:12px;\">Your position: ${myPos}</span>`
+                    : ""
+                }
+              </div>
+              
+              <div style="background: #f0f0f0; height: 8px; border-radius: 4px; margin: 10px 0;">
+                <div style="background: ${
+                  percentage > 50
+                    ? "#28a745"
+                    : percentage > 20
+                    ? "#ffc107"
+                    : "#dc3545"
+                }; 
+                           height: 100%; width: ${Math.min(
+                             100,
+                             (effectiveLeft / conf.total_tickets) * 100
+                           )}%; border-radius: 4px; transition: all 0.3s ease;"></div>
+              </div>
+              
+              <div class="booking-controls">
+                <input type="number" class="ticket-input" value="1" min="1" max="${effectiveLeft}" 
+                       id="tickets-${conf.id}" ${
+              effectiveLeft === 0 || userBlocked ? "disabled" : ""
+            }>
+                ${
+                  effectiveLeft > 0 && !userBlocked
+                    ? `
+                  <button onclick=\"bookTickets('${conf.id}')\"
+                    ${!currentUser ? "disabled" : ""}
+                    class=\"${percentage <= 25 ? "race-button" : ""}\">
+                    ${percentage <= 25 ? "🏁 RACE BOOK!" : "🎟️ Book Now"}
+                  </button>
+                `
+                    : myPos === 1
+                    ? `
+                  <button onclick=\"claimQueue('${conf.id}')\" class=\"confirm-payment\">
+                    🎟️ Claim Now
+                  </button>
+                `
+                    : `
+                  <button onclick=\"joinQueue('${conf.id}')\" ${
+                        !currentUser ? "disabled" : ""
+                      }>
+                    🕒 Join Queue
+                  </button>
+                `
+                }
+              </div>
+            </div>
+          `;
+          })
+          .join("");
+      }
+
+      async function joinQueue(conferenceId) {
+        if (!currentUser) return alert("Join the race first");
+        const tickets = parseInt(
+          document.getElementById(`tickets-${conferenceId}`)?.value || "1",
+          10
+        );
+        try {
+          const r = await fetch(`${API_BASE}/queue/enqueue`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              user_id: currentUser.id,
+              conference_id: conferenceId,
+              ticket_count: tickets,
+            }),
+          });
+          const data = await r.json();
+          if (data.status === "success") {
+            queuePositions[conferenceId] = data.position || 0;
+            showResult(
+              `🕒 Joined queue at position ${data.position}`,
+              "success"
+            );
+            displayConferences(conferencesCache);
+          } else {
+            showResult(
+              `❌ Could not join queue: ${data.error || "unknown error"}`,
+              "error"
+            );
+          }
+        } catch (e) {
+          showResult(`❌ Queue error: ${e.message}`, "error");
+        }
+      }
+
+      async function claimQueue(conferenceId) {
+        if (!currentUser) return;
+        try {
+          const r = await fetch(`${API_BASE}/queue/claim`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              user_id: currentUser.id,
+              conference_id: conferenceId,
+            }),
+          });
+          const data = await r.json();
+          if (data.status === "success") {
+            showPaymentQueue(data.reservation, data.conference);
+            startPaymentTimer(data.reservation);
+            await refreshConferences();
+            await refreshUserReservations();
+            showResult(
+              "🎉 It's your turn! Complete payment within 15s.",
+              "success"
+            );
+          } else {
+            showResult(
+              `❌ Claim failed: ${data.error || "not your turn yet"}`,
+              "error"
+            );
+          }
+        } catch (e) {
+          showResult(`❌ Claim error: ${e.message}`, "error");
+        }
+      }
+
+      // Update the header stats boxes
+      function updateStats(conferences) {
+        try {
+          const totalConfs = conferences.length || 0;
+          const totalAvail = conferences.reduce(
+            (sum, c) => sum + (c.available_tickets || 0),
+            0
+          );
+          document.getElementById("total-conferences").textContent = totalConfs;
+          document.getElementById("total-available").textContent = totalAvail;
+        } catch (e) {
+          // noop
+        }
+      }
+
+      async function bookTickets(conferenceId) {
+        if (!currentUser) {
+          alert("Please join the race first!");
+          return;
+        }
+
+        const ticketsInput = document.getElementById(`tickets-${conferenceId}`);
+        const tickets = parseInt(ticketsInput.value);
+
+        if (tickets <= 0) {
+          alert("Please enter a valid number of tickets");
+          return;
+        }
+
+        // Use new reservation system for payment queue
+        return await createReservation(conferenceId, tickets);
+      }
+
+      // New Reservation System Functions
+      async function createReservation(conferenceId, ticketCount) {
+        try {
+          const response = await fetch(`${API_BASE}/reservations`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              user_id: currentUser.id,
+              conference_id: conferenceId,
+              ticket_count: ticketCount,
+            }),
+          });
+
+          const data = await response.json();
+
+          if (data.status === "success") {
+            showResult(
+              `🎫 Seats reserved! You have 15 seconds to complete payment.`,
+              "success"
+            );
+
+            // Show payment queue with conference name if available
+            showPaymentQueue(data.reservation, data.conference);
+
+            // Start countdown timer
+            startPaymentTimer(data.reservation);
+
+            // Refresh user reservations
+            await refreshUserReservations();
+
+            return data.reservation;
+          } else {
+            showResult(`❌ Reservation failed: ${data.error}`, "error");
+            return null;
+          }
+        } catch (error) {
+          showResult(`❌ Network error: ${error.message}`, "error");
+          return null;
+        }
+      }
+
+      async function confirmPayment(reservationId) {
+        try {
+          const response = await fetch(
+            `${API_BASE}/reservations/${reservationId}/confirm`,
+            {
+              method: "POST",
+            }
+          );
+
+          const data = await response.json();
+
+          if (data.status === "success") {
+            showResult(
+              `🎉 Payment confirmed! Booking created successfully.`,
+              "success"
+            );
+
+            // Hide payment queue
+            hidePaymentQueue();
+
+            // Clear timer
+            clearPaymentTimer(reservationId);
+
+            // Refresh data
+            await refreshConferences();
+            await refreshBookingHistory();
+            await refreshUserReservations();
+
+            return data.booking;
+          } else {
+            showResult(`❌ Payment failed: ${data.error}`, "error");
+            return null;
+          }
+        } catch (error) {
+          showResult(`❌ Payment error: ${error.message}`, "error");
+          return null;
+        }
+      }
+
+      async function cancelReservation(reservationId) {
+        try {
+          const response = await fetch(
+            `${API_BASE}/reservations/${reservationId}`,
+            {
+              method: "DELETE",
+            }
+          );
+
+          const data = await response.json();
+
+          if (data.status === "success") {
+            showResult("Reservation cancelled", "error");
+
+            // Hide payment queue
+            hidePaymentQueue();
+
+            // Clear timer
+            clearPaymentTimer(reservationId);
+
+            // Refresh data
+            await refreshConferences();
+            await refreshUserReservations();
+          } else {
+            showResult(`❌ Cancel failed: ${data.error}`, "error");
+          }
+        } catch (error) {
+          showResult(`❌ Cancel error: ${error.message}`, "error");
+        }
+      }
+
+      function showPaymentQueue(reservation, conference) {
+        const section = document.getElementById("payment-queue-section");
+        const queue = document.getElementById("payment-queue");
+
+        section.style.display = "block";
+
+        const confName =
+          conference?.name || reservation.conference_id || "Conference";
+        queue.innerHTML = `
+          <div class="payment-queue active">
+            <h4>🎫 Reservation Details</h4>
+            <p><strong>Conference:</strong> ${confName}</p>
+            <p><strong>Tickets:</strong> ${reservation.ticket_count}</p>
+            <p><strong>Total:</strong> $${reservation.total_amount.toFixed(
+              2
+            )}</p>
+            
+            <div class="countdown-timer" id="countdown-${reservation.id}">
+              15
+            </div>
+            <p style="text-align: center; margin: 5px 0;">seconds remaining</p>
+            
+            <div class="payment-actions">
+              <button onclick="confirmPayment('${
+                reservation.id
+              }')" class="confirm-payment">
+                💳 Confirm Payment
+              </button>
+              <button onclick="cancelReservation('${
+                reservation.id
+              }')" class="cancel-payment">
+                ❌ Cancel
+              </button>
+            </div>
+          </div>
+        `;
+      }
+
+      function hidePaymentQueue() {
+        const section = document.getElementById("payment-queue-section");
+        section.style.display = "none";
+      }
+
+      function startPaymentTimer(reservation) {
+        const countdownEl = document.getElementById(
+          `countdown-${reservation.id}`
+        );
+        if (!countdownEl) return;
+
+        let timeLeft = 15;
+
+        paymentTimers[reservation.id] = setInterval(() => {
+          timeLeft--;
+          countdownEl.textContent = timeLeft;
+
+          if (timeLeft <= 5) {
+            countdownEl.className = "countdown-timer warning";
+          }
+
+          if (timeLeft <= 0) {
+            clearPaymentTimer(reservation.id);
+            showResult("⏰ Reservation expired! Seats released.", "error");
+            hidePaymentQueue();
+            refreshConferences();
+            refreshUserReservations();
+          }
+        }, 1000);
+      }
+
+      function clearPaymentTimer(reservationId) {
+        if (paymentTimers[reservationId]) {
+          clearInterval(paymentTimers[reservationId]);
+          delete paymentTimers[reservationId];
+        }
+      }
+
+      // Polling logic for live updates
+      function startAutoRefresh() {
+        if (refreshInterval) clearInterval(refreshInterval);
+        refreshInterval = setInterval(async () => {
+          try {
+            await refreshConferences();
+            await refreshBookingHistory();
+            await refreshUserReservations();
+            await refreshQueuePositions();
+          } catch (_) {}
+        }, 2000);
+      }
+
+      // 1-second tick to keep timers/live-remaining updated everywhere
+      function startOneSecondTick() {
+        if (secondTick) clearInterval(secondTick);
+        secondTick = setInterval(() => {
+          // update user reservation relative timers
+          updateUserReservationTimers();
+        }, 1000);
+      }
+
+      function updateUserReservationTimers() {
+        const container = document.getElementById("user-reservations");
+        if (!container) return;
+        const items = container.querySelectorAll("[data-expires-at]");
+        const now = Date.now();
+        items.forEach((el) => {
+          const exp = Number(el.getAttribute("data-expires-at"));
+          const remaining = Math.max(0, Math.floor((exp - now) / 1000));
+          const timeEl = el.querySelector(".remaining-secs");
+          if (timeEl) {
+            timeEl.textContent = `${remaining}s remaining`;
+          }
+          if (remaining <= 0) {
+            el.classList.add("expired");
+          }
+        });
+      }
+
+      // Render booking list and update booking count stat
+      async function refreshBookingHistory() {
+        try {
+          const response = await fetch(`${API_BASE}/bookings`);
+          const data = await response.json();
+          const items = Array.isArray(data.bookings) ? data.bookings : [];
+          const container = document.getElementById("booking-history");
+
+          document.getElementById("active-bookings").textContent =
+            data.count ?? items.length;
+
+          if (items.length === 0) {
+            container.innerHTML = `<div style="text-align:center;color:#999;padding:20px">No bookings yet</div>`;
+            return;
+          }
+
+          container.innerHTML = items
+            .map((row) => {
+              const booking = row.booking || row;
+              const user = row.user || {};
+              const conf = row.conference || {};
+              const when =
+                booking.booked_at ||
+                booking.BookedAt ||
+                new Date().toISOString();
+              const amount = booking.total_amount || booking.TotalAmount || 0;
+              const name = user.name || user.Name || "Unknown";
+              const confName = conf.name || conf.Name || booking.conference_id;
+              return `
+                <div class="booking-item">
+                  <div class="booking-header">
+                    <span class="booking-user">${name}</span>
+                    <span class="booking-time">${new Date(
+                      when
+                    ).toLocaleString()}</span>
+                  </div>
+                  <div class="booking-details">
+                    <span class="booking-conference">${confName}</span> —
+                    <span class="booking-amount">$${Number(amount).toFixed(
+                      2
+                    )}</span>
+                  </div>
+                </div>`;
+            })
+            .join("");
+        } catch (error) {
+          console.error("Failed to refresh booking history:", error);
+        }
+      }
+
+      // Simple helpers to show status messages
+      function showResult(message, type = "success") {
+        const el = document.getElementById("booking-results");
+        el.className = `status-display ${
+          type === "error" ? "error" : "success"
+        }`;
+        el.textContent = message;
+      }
+
+      function logResult(message, type = "success") {
+        showResult(message, type);
+      }
+
+      async function refreshUserReservations() {
+        if (!currentUser) return;
+
+        try {
+          const response = await fetch(
+            `${API_BASE}/users/${currentUser.id}/reservations`
+          );
+          const data = await response.json();
+
+          if (data.status === "success") {
+            // Cache for UI logic (e.g., disabling booking on same conference)
+            activeReservations = data.reservations || [];
+            displayUserReservations(data.reservations);
+          }
+        } catch (error) {
+          console.error("Failed to fetch user reservations:", error);
+        }
+      }
+
+      function displayUserReservations(reservations) {
+        const section = document.getElementById("reservations-section");
+        const container = document.getElementById("user-reservations");
+
+        if (reservations.length === 0) {
+          section.style.display = "none";
+          return;
+        }
+
+        section.style.display = "block";
+
+        container.innerHTML = reservations
+          .map((item) => {
+            const reservation = item.reservation;
+            const confName =
+              item.conference?.name ||
+              reservation.conference_id ||
+              "Conference";
+            const remainingTime = Math.max(0, Math.floor(item.remaining_time));
+            const expired = item.expired;
+
+            return `
+            <div class="reservation-item ${
+              expired ? "expired" : ""
+            }" data-reservation-id="${reservation.id}" data-expires-at="${
+              Date.now() + (expired ? 0 : remainingTime * 1000)
+            }">
+              <p><strong>Conference:</strong> ${confName}</p>
+              <p><strong>Tickets:</strong> ${reservation.ticket_count}</p>
+              <p><strong>Total:</strong> $${reservation.total_amount.toFixed(
+                2
+              )}</p>
+              <p><strong>Status:</strong> ${
+                expired
+                  ? "Expired"
+                  : `<span class='remaining-secs'>${remainingTime}s remaining</span>`
+              }</p>
+              ${
+                !expired
+                  ? `
+                <div style="margin-top: 10px;">
+                  <button onclick=\"cancelReservation('${reservation.id}')\" class=\"cancel-payment\">
+                    ❌ Cancel
+                  </button>
+                </div>
+              `
+                  : ""
+              }
+            </div>
+          `;
+          })
+          .join("");
+
+        // After rendering, make sure timers show current remaining time
+        updateUserReservationTimers();
+      }
+
+      // Cleanup on page unload
+      window.addEventListener("beforeunload", function () {
+        if (refreshInterval) {
+          clearInterval(refreshInterval);
+        }
+      });
+    </script>
+  </body>
+</html>
